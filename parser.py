@@ -39,7 +39,7 @@ def parser(tokens: List[str]) -> Tuple[bool, Union[ParseTree, ErrorReport]]:
         state = stack[-1]
         token = tokens[index]
         action = ACTION.get((state, token))
-
+        
         if action is None:
             return False, ErrorReport(index, f"unexpected token '{token}'")
 
@@ -50,12 +50,13 @@ def parser(tokens: List[str]) -> Tuple[bool, Union[ParseTree, ErrorReport]]:
 
         elif action[0] == "reduce":
             lhs, rhs = productions[action[1]]
-            rhs_len = 0 if rhs == ['ε'] else len(rhs)
+            rhs_len = len(rhs)
             children = tree_stack[-rhs_len:] if rhs_len > 0 else []
-            del tree_stack[-rhs_len:]
-            del stack[-rhs_len:]
+            if rhs_len > 0:
+                del tree_stack[-rhs_len:]
+                del stack[-rhs_len:]
             tree_stack.append(ParseTree(lhs, children))
-
+            
             goto_state = GOTO.get((stack[-1], lhs))
             if goto_state is None:
                 return False, ErrorReport(index, f"no GOTO for ({stack[-1]}, {lhs})")
@@ -79,7 +80,7 @@ ACTION = {
 
     (6, '$'): ('reduce', 1), 
 
-    (7, ';'): ('shift', 8), (7, '='): ('shift', 9), (4, '('): ('shift', 10), 
+    (7, ';'): ('shift', 8), (7, '='): ('shift', 9), (7, '('): ('shift', 10), 
 
     (8, 'type'): ('reduce', 5), (8, 'id'): ('reduce', 5), (8, '{'): ('reduce', 5), (8, '}'): ('reduce', 5), (8, 'if'): ('reduce', 5),
     (8, 'else'): ('reduce', 5), (8, 'while'): ('reduce', 5), (8, 'for'): ('reduce', 5), (8, 'return'): ('reduce', 5), (8, '$'): ('reduce', 5),
@@ -94,7 +95,7 @@ ACTION = {
 
     (13, ';'): ('reduce', 30), (13, ')'): ('reduce', 30), (13, ','): ('reduce', 30), (13, '=='): ('shift', 26), (13, '+'): ('shift', 27), 
 
-    (14, ';'): ('reduce', 32), (14, ')'): ('reduce', 32), (14, ','): ('reduce', 32), (13, '=='): ('reduce', 32), (13, '+'): ('reduce', 32), 
+    (14, ';'): ('reduce', 32), (14, ')'): ('reduce', 32), (14, ','): ('reduce', 32), (14, '=='): ('reduce', 32), (14, '+'): ('reduce', 32), 
     (14, '*'): ('shift', 28), 
 
     (15, ';'): ('reduce', 34), (15, ')'): ('reduce', 34), (15, ','): ('reduce', 34), (15, '=='): ('reduce', 34), (15, '+'): ('reduce', 34), 
@@ -102,16 +103,16 @@ ACTION = {
 
     (16, 'id'): ('shift', 18), (16, '('): ('shift', 21), (16, '-'): ('shift', 16), (16, 'num'): ('shift', 20), 
 
-    (17, 'id'): ('reduce', 37), (17, ')'): ('reduce', 37), (17, ','): ('reduce', 37), (17, '=='): ('reduce', 37), (17, '+'): ('reduce', 37),
+    (17, ';'): ('reduce', 37), (17, ')'): ('reduce', 37), (17, ','): ('reduce', 37), (17, '=='): ('reduce', 37), (17, '+'): ('reduce', 37),
     (17, '*'): ('reduce', 37),
 
-    (18, 'id'): ('reduce', 40), (18, '('): ('shift', 30), (18, ')'): ('reduce', 40), (18, ','): ('reduce', 40), (18, '=='): ('reduce', 40),
+    (18, ';'): ('reduce', 40), (18, '('): ('shift', 30), (18, ')'): ('reduce', 40), (18, ','): ('reduce', 40), (18, '=='): ('reduce', 40),
     (18, '+'): ('reduce', 40), (18, '*'): ('reduce', 40),
 
-    (19, 'id'): ('reduce', 39), (19, ')'): ('reduce', 39), (19, ','): ('reduce', 39), (19, '=='): ('reduce', 39), (19, '+'): ('reduce', 39),
+    (19, ';'): ('reduce', 39), (19, ')'): ('reduce', 39), (19, ','): ('reduce', 39), (19, '=='): ('reduce', 39), (19, '+'): ('reduce', 39),
     (19, '*'): ('reduce', 39),
     
-    (20, 'id'): ('reduce', 41), (20, ')'): ('reduce', 41), (20, ','): ('reduce', 41), (20, '=='): ('reduce', 41), (20, '+'): ('reduce', 41),
+    (20, ';'): ('reduce', 41), (20, ')'): ('reduce', 41), (20, ','): ('reduce', 41), (20, '=='): ('reduce', 41), (20, '+'): ('reduce', 41),
     (20, '*'): ('reduce', 41),
 
     (21, 'id'): ('shift', 18), (21, '('): ('shift', 21), (21, '-'): ('shift', 16), (21, 'num'): ('shift', 20),
@@ -134,11 +135,11 @@ ACTION = {
     (29, ';'): ('reduce', 36), (29, ')'): ('reduce', 36), (29, ','): ('reduce', 36), (29, '=='): ('reduce', 36), (29, '+'): ('reduce', 36),
     (29, '*'): ('reduce', 36),
 
-    (30, ';'): ('shift', 18), (30, ')'): ('shift', 21), (30, ','): ('reduce', 45), (30, '-'): ('shift', 16), (30, 'num'): ('shift', 20),
+    (30, 'id'): ('shift', 18), (30, '('): ('shift', 21), (30, ')'): ('reduce', 45), (30, '-'): ('shift', 16), (30, 'num'): ('shift', 20),
 
     (31, ')'): ('shift', 40),
 
-    (32, '}'): ('shift', 42),
+    (32, '{'): ('shift', 42),
 
     (33, 'type'): ('shift', 24), (34, ')'): ('reduce', 10),
 
@@ -154,7 +155,7 @@ ACTION = {
 
     (38, ')'): ('shift', 44),
 
-    (39, ')'): ('reduce', 44), (39, ';'): ('shift', 45),
+    (39, ')'): ('reduce', 44), (39, ','): ('shift', 45),
 
     (40, ';'): ('reduce', 42), (40, ')'): ('reduce', 42), (40, ','): ('reduce', 42), (40, '=='): ('reduce', 42), (40, '+'): ('reduce', 42),
     (40, '*'): ('reduce', 42),
@@ -216,7 +217,7 @@ ACTION = {
 
     (64, 'id'): ('shift', 18), (64, '('): ('shift', 21), (64, '-'): ('shift', 20), (64, 'num'): ('shift', 20),
     
-    (65, ';'): ('reduce', 71),
+    (65, ';'): ('shift', 71),
     
     (66, ';'): ('shift', 8), (66, '='): ('shift', 9),
     
@@ -282,9 +283,9 @@ ACTION = {
 }
 
 GOTO = {
-    (0, "DeclList"): 1, (0, "Decl"): 2, (0, "VarDecl"): 3, (0, "FunDecl"): 4,
+    (0, "DeclList"): 1, (0, "Decl"): 2, (0, "VarDecl"): 3, (0, "FuncDecl"): 4,
 
-    (2, "DeclList"): 6, (2, "Decl"): 2, (2, "VarDecl"): 3, (2, "FunDecl"): 4,
+    (2, "DeclList"): 6, (2, "Decl"): 2, (2, "VarDecl"): 3, (2, "FuncDecl"): 4,
 
     (9, "Expr"): 11, (9, "EqualityExpr"): 12, (9, "AddExpr"): 13, (9, "MulExpr"): 14, (9, "UnaryExpr"): 15,
     (9, "PostfixExpr"): 17, (9, "PrimaryExpr"): 19,
